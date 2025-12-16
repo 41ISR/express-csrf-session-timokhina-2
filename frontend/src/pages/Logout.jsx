@@ -1,13 +1,22 @@
-const { useEffect } = require("react")
+import { useEffect } from "react"
+import { useAuthStore } from "../store/useAuthStore"
+import { useNavigate } from "react-router-dom"
 
-const Logout  = () => {
-    useEffect(()=> {
+const Logout = () => {
+    const { clearUser } = useAuthStore()
+    const navigate = useNavigate()
+    useEffect(() => {
         const logUserOut = async () => {
-            const res = await fetch ("https://animated-dollop-r4p96pw567g6356v9.github.dev/auth/logout"),
-            
+            await fetch("https://improved-chainsaw-jjq67q9p7qgx3rx5-3000.app.github.dev/auth/logout", {
+                credentials: "include"
+            })
+            clearUser()
+            navigate("/signin")
         }
         logUserOut()
-    },[])
+    }, [])
+
+    return <></>
 }
 
 export default Logout

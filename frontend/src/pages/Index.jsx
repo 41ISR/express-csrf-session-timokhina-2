@@ -1,9 +1,58 @@
+import { useRef } from "react"
+import { useEffect } from "react"
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { useAuthStore } from "../store/useAuthStore"
 
 const Index = () => {
-    const [clicks, setClicks] = useState(0)
+    const navigate = useNavigate()
+    const formRef = useRef(null)
+    const {user} = useAuthStore()
+    const [clicks, setClicks] = useState(user.clicks)
+    const clickRef = useRef(null)
+    
+    useEffect(() => {
+        const interval = setInterval(() => {
+            formRef.current && handleSubmit()
+        }, 5000)
+
+        return () => {clearInterval(interval)}
+    }, [])
+    useEffect(() => {
+        clickRef.current = clicks
+    }, [clicks])
+
+    useEffect(()=> {
+        setClicks(user.user.clicks)
+    },[user])
+
     const handleClick = () => {
         setClicks((val) => val + 1)
+    }
+
+    const handleLogout = () => {
+        navigate("/logout")
+    }
+
+
+    const handleSubmit = async () => {
+        try {
+            const res = await fetch("https://improved-chainsaw-jjq67q9p7qgx3rx5-3000.app.github.dev/click",
+                {
+                    method:"POST",
+                    credentials:"include",
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+                    body: JSON.stringify({clicks: clickRef.current})
+                }
+
+            )
+            const data = await res.json()
+            console.log(data)
+        } catch (error) {
+           console.error(error)
+        }
     }
     return (
         <div className="container">
@@ -12,7 +61,7 @@ const Index = () => {
                 <h1>🎮 Кликер Игра</h1>
                 <div className="user-info">
                     <span><strong>Имя пользователя</strong></span>
-                    <button className="logout-btn">Выйти</button>
+                    <button onClick={handleLogout} className="logout-btn">Выйти</button>
                 </div>
             </div>
             <div className="game-area">
@@ -20,7 +69,9 @@ const Index = () => {
                 <div className="click-counter">
                     <h2>Твои клики</h2>
                     <div className="clicks-display">{clicks}</div>
-                    <button className="click-button" onClick={handleClick}>👆 КЛИКНИ!</button>
+                    <form onSubmit={(e) => e.preventDefault()} ref={formRef}>
+                            <button className="click-button" onClick={handleClick}>👆 КЛИКНИ!</button>
+                    </form>
                 </div>
 
                 <div className="leaderboard">
